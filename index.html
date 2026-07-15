@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Remote Patient Monitoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="script.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+        }
+        
+        .vital-card {
+            transition: all 0.3s ease;
+        }
+        
+        .vital-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .patient-status {
+            position: relative;
+        }
+        
+        .patient-status::after {
+            content: '';
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .status-stable::after {
+            background-color: var(--secondary);
+        }
+        
+        .status-warning::after {
+            background-color: var(--warning);
+        }
+        
+        .status-critical::after {
+            background-color: var(--danger);
+        }
+        
+        .alert {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <div class="sidebar fixed inset-y-0 left-0 bg-white w-64 shadow-lg z-50">
+            <div class="flex items-center justify-center h-16 px-4 bg-indigo-600 text-white">
+                <h1 class="text-xl font-bold">AI Health Monitor</h1>
+                <button id="sidebar-close" class="md:hidden ml-auto">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <nav class="mt-6">
+                <div class="px-4 py-2">
+                    <div class="flex items-center bg-indigo-50 text-indigo-700 px-4 py-3 rounded-lg">
+                        <i class="fas fa-tachometer-alt mr-3"></i>
+                        <span>Dashboard</span>
+                    </div>
+                </div>
+                <div class="px-4 py-2">
+                    <div class="flex items-center text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 px-4 py-3 rounded-lg transition">
+                        <i class="fas fa-user-injured mr-3"></i>
+                        <span>Patients</span>
+                    </div>
+                </div>
+                <div class="px-4 py-2">
+                    <div class="flex items-center text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 px-4 py-3 rounded-lg transition">
+                        <i class="fas fa-bell mr-3"></i>
+                        <span>Alerts</span>
+                    </div>
+                </div>
+                <div class="px-4 py-2">
+                    <div class="flex items-center text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 px-4 py-3 rounded-lg transition">
+                        <i class="fas fa-chart-line mr-3"></i>
+                        <span>Analytics</span>
+                    </div>
+                </div>
+                <div class="px-4 py-2">
+                    <div class="flex items-center text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 px-4 py-3 rounded-lg transition">
+                        <i class="fas fa-cog mr-3"></i>
+                        <span>Settings</span>
+                    </div>
+                </div>
+            </nav>
+            <div class="absolute bottom-0 w-full px-4 py-3 border-t">
+                <div class="flex items-center">
+                    <img src="https://placehold.co/40x40" alt="Portrait of Dr. Sarah Johnson, female doctor with brown hair wearing white coat and stethoscope" class="rounded-full mr-3">
+                    <div>
+                        <p class="font-medium">Dr. Sarah Johnson</p>
+                        <p class="text-xs text-gray-500">Cardiologist</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-auto md:ml-64">
+            <!-- Top Navigation -->
+            <header class="bg-white shadow-sm h-16 flex items-center justify-between px-6 sticky top-0 z-40">
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="mr-4 text-gray-600 md:hidden">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2 class="text-lg font-semibold">Dashboard Overview</h2>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="relative">
+                        <button class="text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500"></span>
+                        </button>
+                    </div>
+                    <button class="flex items-center text-gray-600 hover:text-gray-900">
+                        <span class="mr-2">Help</span>
+                        <i class="fas fa-question-circle"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Main Content Area -->
+            <main class="p-6">
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-indigo-100 text-indigo-600 mr-4">
+                                <i class="fas fa-user-injured text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Active Patients</p>
+                                <h3 class="text-2xl font-bold">142</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-green-100 text-green-600 mr-4">
+                                <i class="fas fa-heartbeat text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Stable</p>
+                                <h3 class="text-2xl font-bold">118</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-yellow-100 text-yellow-600 mr-4">
+                                <i class="fas fa-exclamation-triangle text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Warning</p>
+                                <h3 class="text-2xl font-bold">18</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-lg bg-red-100 text-red-600 mr-4">
+                                <i class="fas fa-procedures text-xl"></i>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Critical</p>
+                                <h3 class="text-2xl font-bold">6</h3>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Critical Alert Banner -->
+                <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <span>3 Critical Alerts Require Immediate Attention</span>
+                    </div>
+                    <button class="text-red-500 hover:text-red-700 font-medium">View Alerts</button>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Patient Vitals Monitoring -->
+                    <div class="lg:col-span-2 bg-white rounded-xl shadow p-5">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-semibold">Patient Vitals Monitoring</h2>
+                            <div class="flex items-center space-x-2">
+                                <button class="px-3 py-1 bg-indigo-50 text-indigo-600 rounded-lg text-sm">Real-time</button>
+                                <button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-sm">24h</button>
+                                <button class="px-3 py-1 bg-gray-50 text-gray-600 rounded-lg text-sm">7d</button>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="vital-card bg-white border border-green-100 rounded-lg p-4 shadow-sm">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Heart Rate</p>
+                                        <h3 class="text-2xl font-bold">72 <span class="text-sm font-normal text-gray-500">bpm</span></h3>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-green-100 text-green-600">
+                                        <i class="fas fa-heartbeat"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4 h-[2px] bg-gray-100 relative">
+                                    <div class="absolute h-full w-2/3 bg-green-500 rounded-full"></div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Normal: 60-100 bpm</p>
+                            </div>
+                            <div class="vital-card bg-white border border-yellow-100 rounded-lg p-4 shadow-sm">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Blood Pressure</p>
+                                        <h3 class="text-2xl font-bold">148/92 <span class="text-sm font-normal text-gray-500">mmHg</span></h3>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-yellow-100 text-yellow-600">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4 h-[2px] bg-gray-100 relative">
+                                    <div class="absolute h-full w-4/5 bg-yellow-500 rounded-full"></div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Elevated: 120-129/80</p>
+                            </div>
+                            <div class="vital-card bg-white border border-gray-100 rounded-lg p-4 shadow-sm">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <p class="text-sm text-gray-500">Oxygen Saturation</p>
+                                        <h3 class="text-2xl font-bold">96 <span class="text-sm font-normal text-gray-500">%</span></h3>
+                                    </div>
+                                    <div class="p-2 rounded-lg bg-blue-100 text-blue-600">
+                                        <i class="fas fa-lungs"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4 h-[2px] bg-gray-100 relative">
+                                    <div class="absolute h-full w-3/4 bg-blue-500 rounded-full"></div>
+                                </div>
+                                <p class="mt-2 text-xs text-gray-500">Normal: 95-100%</p>
+                            </div>
+                        </div>
+                        <div class="h-64">
+                            <canvas id="vital-trends"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Patient List -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-semibold">Recent Patients</h2>
+                            <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View All</button>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex items-center p-3 bg-blue-50 rounded-lg border border-blue-100">
+                                <img src="https://placehold.co/40x40" alt="Portrait of John Smith, elderly male patient with gray hair and glasses" class="rounded-full mr-3">
+                                <div class="flex-1">
+                                    <p class="font-medium">John Smith</p>
+                                    <p class="text-sm text-gray-500">68 years • CHF</p>
+                                </div>
+                                <span class="patient-status status-critical text-red-600 font-medium">Critical</span>
+                                <i class="fas fa-chevron-right ml-2 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition">
+                                <img src="https://placehold.co/40x40" alt="Portrait of Maria Garcia, middle-aged female patient with dark hair and warm smile" class="rounded-full mr-3">
+                                <div class="flex-1">
+                                    <p class="font-medium">Maria Garcia</p>
+                                    <p class="text-sm text-gray-500">52 years • Diabetes</p>
+                                </div>
+                                <span class="patient-status status-warning text-yellow-600 font-medium">Warning</span>
+                                <i class="fas fa-chevron-right ml-2 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition">
+                                <img src="https://placehold.co/40x40" alt="Portrait of Robert Chen, senior male patient with short white hair and friendly expression" class="rounded-full mr-3">
+                                <div class="flex-1">
+                                    <p class="font-medium">Robert Chen</p>
+                                    <p class="text-sm text-gray-500">74 years • Hypertension</p>
+                                </div>
+                                <span class="patient-status status-stable text-green-600 font-medium">Stable</span>
+                                <i class="fas fa-chevron-right ml-2 text-gray-400"></i>
+                            </div>
+                            <div class="flex items-center p-3 hover:bg-gray-50 rounded-lg transition">
+                                <img src="https://placehold.co/40x40" alt="Portrait of Sarah Williams, young female patient with blonde hair and determined expression" class="rounded-full mr-3">
+                                <div class="flex-1">
+                                    <p class="font-medium">Sarah Williams</p>
+                                    <p class="text-sm text-gray-500">34 years • Asthma</p>
+                                </div>
+                                <span class="patient-status status-stable text-green-600 font-medium">Stable</span>
+                                <i class="fas fa-chevron-right ml-2 text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- AI Insights -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <h2 class="text-lg font-semibold mb-6">AI Health Insights</h2>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                                <div class="flex items-start">
+                                    <div class="p-2 rounded-lg bg-blue-100 text-blue-600 mr-3">
+                                        <i class="fas fa-lightbulb"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium mb-1">Elevated Blood Pressure Detected</h4>
+                                        <p class="text-sm text-gray-600">John Smith's blood pressure has been consistently elevated over the past 72 hours. Consider adjusting medication.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-green-50 rounded-lg border border-green-100">
+                                <div class="flex items-start">
+                                    <div class="p-2 rounded-lg bg-green-100 text-green-600 mr-3">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium mb-1">Positive Trend Identified</h4>
+                                        <p class="text-sm text-gray-600">Maria Garcia's glucose levels have stabilized over the past week. The current treatment plan appears effective.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-yellow-50 rounded-lg border border-yellow-100">
+                                <div class="flex items-start">
+                                    <div class="p-2 rounded-lg bg-yellow-100 text-yellow-600 mr-3">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="font-medium mb-1">Irregular Sleep Pattern</h4>
+                                        <p class="text-sm text-gray-600">Robert Chen's sleep duration has decreased by 30% this week. May indicate increased CHF symptoms.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Critical Alerts -->
+                    <div class="bg-white rounded-xl shadow p-5">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-lg font-semibold">Critical Alerts</h2>
+                            <button class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">View All</button>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="p-4 bg-red-50 rounded-lg border border-red-200 alert">
+                                <div class="flex items-start">
+                                    <div class="p-2 rounded-lg bg-red-100 text-red-600 mr-3">
+                                        <i class="fas fa-heartbeat blink"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between">
+                                            <h4 class="font-medium">Severe Tachycardia</h4>
+                                            <span class="text-xs text-red-500">10:23 AM</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">John Smith's heart rate spiked to 142 bpm. Patient at risk of cardiac event.</p>
+                                        <div class="mt-2 flex space-x-2">
+                                            <button class="px-3 py-1 bg-red-100 text-red-600 rounded text-xs font-medium">Emergency</button>
+                                            <button class="px-3 py-1 bg-white text-gray-600 border border-gray-200 rounded text-xs font-medium">Mark as Read</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                                <div class="flex items-start">
+                                    <div class="p-2 rounded-lg bg-red-100 text-red-600 mr-3">
+                                        <i class="fas fa-tint"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between">
+                                            <h4 class="font-medium">Hypertensive Crisis</h4>
+                                            <span class="text-xs text-red-500">09:15 AM</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">Blood pressure reading: 182/110 mmHg. Immediate intervention required.</p>
+                                        <div class="mt-2 flex space-x-2">
+                                            <button class="px-3 py-1 bg-red-100 text-red-600 rounded text-xs font-medium">Emergency</button>
+                                            <button class="px-3 py-1 bg-white text-gray-600 border border-gray-200 rounded text-xs font-medium">Mark as Read</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-4 bg-red-50 rounded-lg border border-red-200">
+                                <div class="flex items-start">
+                                    <div class="p-2 rounded-lg bg-red-100 text-red-600 mr-3">
+                                        <i class="fas fa-lungs"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex justify-between">
+                                            <h4 class="font-medium">Hypoxia Alert</h4>
+                                            <span class="text-xs text-red-500">08:42 AM</span>
+                                        </div>
+                                        <p class="text-sm text-gray-600 mt-1">Oxygen saturation dropped to 87% for 8 minutes. Requires immediate assessment.</p>
+                                        <div class="mt-2 flex space-x-2">
+                                            <button class="px-3 py-1 bg-red-100 text-red-600 rounded text-xs font-medium">Emergency</button>
+                                            <button class="px-3 py-1 bg-white text-gray-600 border border-gray-200 rounded text-xs font-medium">Mark as Read</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Sidebar toggle for mobile
+        document.getElementById('sidebar-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.add('active');
+        });
+
+        document.getElementById('sidebar-close').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.remove('active');
+        });
+
+        // Initialize charts
+        document.addEventListener('DOMContentLoaded', function() {
+            // Vital Trends Chart
+            const vitalCtx = document.getElementById('vital-trends').getContext('2d');
+            const vitalChart = new Chart(vitalCtx, {
+                type: 'line',
+                data: {
+                    labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '00:00'],
+                    datasets: [
+                        {
+                            label: 'Heart Rate',
+                            data: [72, 68, 75, 82, 78, 76, 74],
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Systolic BP',
+                            data: [118, 122, 125, 130, 128, 124, 120],
+                            borderColor: '#F59E0B',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Oxygen %',
+                            data: [98, 97, 96, 95, 96, 97, 98],
+                            borderColor: '#3B82F6',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            suggestedMin: 50,
+                            suggestedMax: 150
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+
+            // Simulate real-time data updates
+            setInterval(() => {
+                // Heart rate random fluctuation
+                const hrFluctuation = (Math.random() * 4) - 2;
+                const lastHr = vitalChart.data.datasets[0].data[vitalChart.data.datasets[0].data.length - 1];
+                let newHr = lastHr + hrFluctuation;
+                newHr = Math.max(60, Math.min(100, newHr));
+                
+                // BP random fluctuation
+                const bpFluctuation = (Math.random() * 5) - 2.5;
+                const lastBp = vitalChart.data.datasets[1].data[vitalChart.data.datasets[1].data.length - 1];
+                let newBp = lastBp + bpFluctuation;
+                newBp = Math.max(110, Math.min(140, newBp));
+                
+                // Oxygen random fluctuation
+                const oxFluctuation = (Math.random() * 0.8) - 0.4;
+                const lastOx = vitalChart.data.datasets[2].data[vitalChart.data.datasets[2].data.length - 1];
+                let newOx = lastOx + oxFluctuation;
+                newOx = Math.max(94, Math.min(100, newOx));
+                
+                // Shift all data left and add new point
+                vitalChart.data.labels.shift();
+                vitalChart.data.labels.push(new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}));
+                
+                vitalChart.data.datasets[0].data.shift();
+                vitalChart.data.datasets[0].data.push(Math.round(newHr));
+                
+                vitalChart.data.datasets[1].data.shift();
+                vitalChart.data.datasets[1].data.push(Math.round(newBp));
+                
+                vitalChart.data.datasets[2].data.shift();
+                vitalChart.data.datasets[2].data.push(parseFloat(newOx.toFixed(1)));
+                
+                vitalChart.update();
+                
+                // Update the vital cards with new random values
+                document.querySelectorAll('.vital-card h3')[0].textContent = Math.round(newHr) + ' bpm';
+                document.querySelectorAll('.vital-card h3')[1].textContent = Math.round(newBp) + '/' + Math.round(newBp * 0.75) + ' mmHg';
+                document.querySelectorAll('.vital-card h3')[2].textContent = newOx.toFixed(1) + ' %';
+                
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
