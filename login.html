@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Portal | AI-Powered Remote Patient Monitoring</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        .hero-gradient {
+            background: linear-gradient(135deg, #7b4397 0%, #dc2430 100%);
+        }
+        .input-transition {
+            transition: all 0.3s ease;
+        }
+        .input-transition:focus {
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+        .toggle-form {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <header class="hero-gradient text-white shadow-lg">
+            <div class="container mx-auto px-4 py-6 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl font-bold">RemoteCareAI</span>
+                </div>
+                <nav>
+                    <ul class="flex space-x-6">
+                        <li><a href="#features" class="hover:text-gray-200">Features</a></li>
+                        <li><a href="#about" class="hover:text-gray-200">About</a></li>
+                        <li><a href="#contact" class="hover:text-gray-200">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-grow">
+            <div class="container mx-auto px-4 py-12">
+                <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                    <!-- Welcome Section -->
+                    <div class="space-y-6">
+                        <h1 class="text-4xl font-bold text-gray-800">AI-Powered Remote Patient Monitoring</h1>
+                        <p class="text-lg text-gray-600">
+                            Advanced dashboard for doctors to monitor patients remotely with real-time AI analytics and predictive insights.
+                        </p>
+                        <div class="space-y-4">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <span class="text-gray-700">Real-time patient vitals monitoring</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <span class="text-gray-700">AI-driven health risk predictions</span>
+                            </div>
+                            <div class="flex items-center space-x-3">
+                                <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </div>
+                                <span class="text-gray-700">Secure HIPAA-compliant platform</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Auth Forms -->
+                    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+                        <div class="px-8 py-6">
+                            <div id="form-container">
+                                <!-- Login Form (default visible) -->
+                                <div id="login-form" class="toggle-form">
+                                    <div class="flex border-b border-gray-200 mb-4">
+                                        <button class="flex-1 py-2 px-4 text-center font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent" id="patient-tab">Patient</button>
+                                        <button class="flex-1 py-2 px-4 text-center font-medium text-blue-600 border-b-2 border-blue-500" id="doctor-tab">Doctor</button>
+                                        <button class="flex-1 py-2 px-4 text-center font-medium text-gray-500 hover:text-gray-700 border-b-2 border-transparent" id="family-tab">Family</button>
+                                    </div>
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-4" id="login-title">Doctor Login</h2>
+                                    <form id="loginForm" class="space-y-4">
+                                        <div>
+                                            <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                            <input type="email" id="login-email" required 
+                                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 input-transition focus:border-blue-500 focus:outline-none">
+                                        </div>
+                                        <div>
+                                            <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                            <input type="password" id="login-password" required 
+                                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 input-transition focus:border-blue-500 focus:outline-none">
+                                            <a href="#" class="text-sm text-blue-600 hover:underline float-right mt-1">Forgot password?</a>
+                                        </div>
+                                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition duration-200">
+                                            Sign In
+                                        </button>
+                                    </form>
+                                    
+                                    <div class="flex items-center my-6">
+                                        <div class="flex-grow border-t border-gray-300"></div>
+                                        <span class="mx-4 text-gray-500 text-sm">OR</span>
+                                        <div class="flex-grow border-t border-gray-300"></div>
+                                    </div>
+                                    
+                                    <!-- Google Sign In -->
+                                    <div id="g_id_onload"
+                                         data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                                         data-context="signin"
+                                         data-ux_mode="popup"
+                                         data-callback="handleGoogleSignIn"
+                                         data-auto_prompt="false">
+                                    </div>
+                                    
+                                    <div class="flex justify-center">
+                                        <div class="g_id_signin"
+                                             data-type="standard"
+                                             data-shape="rectangular"
+                                             data-theme="filled_blue"
+                                             data-text="signin_with"
+                                             data-size="large"
+                                             data-logo_alignment="left"
+                                             data-width="300">
+                                        </div>
+                                    </div>
+
+                                    <p class="text-center mt-6 text-gray-600">
+                                        Don't have an account? 
+                                        <a href="#" id="show-signup" class="text-blue-600 hover:underline">Sign up</a>
+                                    </p>
+                                </div>
+
+                                <!-- Signup Form (hidden by default) -->
+                                <div id="signup-form" class="toggle-form hidden">
+                                    <h2 class="text-2xl font-bold text-gray-800 mb-4" id="register-title">Doctor Registration</h2>
+                                    <div id="doctor-fields">
+                                    <form id="signupForm" class="space-y-4">
+                                        <div>
+                                            <label for="signup-name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                                            <input type="text" id="signup-name" required 
+                                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 input-transition focus:border-blue-500 focus:outline-none">
+                                        </div>
+                                        <div>
+                                            <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                            <input type="email" id="signup-email" required 
+                                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 input-transition focus:border-blue-500 focus:outline-none">
+                                        </div>
+                                        <div>
+                                            <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                                            <input type="password" id="signup-password" required 
+                                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 input-transition focus:border-blue-500 focus:outline-none">
+                                        </div>
+                                        <div>
+                                            <label for="signup-confirm" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                                            <input type="password" id="signup-confirm" required 
+                                                   class="w-full px-4 py-2 rounded-lg border border-gray-300 input-transition focus:border-blue-500 focus:outline-none">
+                                        </div>
+                                        <div class="flex items-center">
+                                            <input type="checkbox" id="doctor-agreement" required 
+                                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                            <label for="doctor-agreement" class="ml-2 block text-sm text-gray-700">
+                                                I certify that I'm a licensed healthcare professional
+                                            </label>
+                                        </div>
+                                        <div id="patient-fields" class="hidden">
+                                            <div>
+                                                <label for="patient-condition" class="block text-sm font-medium text-gray-700 mb-1">Medical Condition</label>
+                                                <input type="text" id="patient-condition" class="w-full px-4 py-2 rounded-lg border border-gray-300">
+                                            </div>
+                                        </div>
+                                        <div id="family-fields" class="hidden">
+                                            <div>
+                                                <label for="family-relationship" class="block text-sm font-medium text-gray-700 mb-1">Relationship to Patient</label>
+                                                <input type="text" id="family-relationship" class="w-full px-4 py-2 rounded-lg border border-gray-300">
+                                            </div>
+                                            <div>
+                                                <label for="patient-id" class="block text-sm font-medium text-gray-700 mb-1">Patient ID</label>
+                                                <input type="text" id="patient-id" class="w-full px-4 py-2 rounded-lg border border-gray-300">
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition duration-200">
+                                            Register
+                                        </button>
+                                    </form>
+                                    
+                                    <div class="flex items-center my-6">
+                                        <div class="flex-grow border-t border-gray-300"></div>
+                                        <span class="mx-4 text-gray-500 text-sm">OR</span>
+                                        <div class="flex-grow border-t border-gray-300"></div>
+                                    </div>
+                                    
+                                    <!-- Google Sign Up -->
+                                    <div id="g_id_onload_signup"
+                                         data-client_id="YOUR_GOOGLE_CLIENT_ID"
+                                         data-context="signup"
+                                         data-ux_mode="popup"
+                                         data-callback="handleGoogleSignIn"
+                                         data-auto_prompt="false">
+                                    </div>
+                                    
+                                    <div class="flex justify-center">
+                                        <div class="g_id_signin"
+                                             data-type="standard"
+                                             data-shape="rectangular"
+                                             data-theme="filled_blue"
+                                             data-text="signup_with"
+                                             data-size="large"
+                                             data-logo_alignment="left"
+                                             data-width="300">
+                                        </div>
+                                    </div>
+
+                                    <p class="text-center mt-6 text-gray-600">
+                                        Already have an account? 
+                                        <a href="#" id="show-login" class="text-blue-600 hover:underline">Sign in</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-50 px-8 py-4 border-t border-gray-200">
+                            <p class="text-xs text-gray-500 text-center">
+                                By signing in or creating an account, you agree to our <a href="#" class="text-blue-600 hover:underline">Terms of Service</a> and acknowledge that you have read our <a href="#" class="text-blue-600 hover:underline">Privacy Policy</a>.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-gray-800 text-white py-8">
+            <div class="container mx-auto px-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">RemoteCareAI</h3>
+                        <p class="text-gray-400">
+                            Advanced AI-powered platform for remote patient monitoring and predictive healthcare analytics.
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                        <ul class="space-y-2">
+                            <li><a href="#" class="text-gray-400 hover:text-white">Home</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Features</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Pricing</a></li>
+                            <li><a href="#" class="text-gray-400 hover:text-white">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Contact</h3>
+                        <address class="not-italic text-gray-400">
+                            123 Medical Drive<br>
+                            Healthcare City, HC 12345<br>
+                            <abbr title="Phone">P:</abbr> (123) 456-7890<br>
+                            <abbr title="Email">E:</abbr> info@remotecareai.com
+                        </address>
+                    </div>
+                </div>
+                <div class="border-t border-gray-700 mt-8 pt-8 text-sm text-gray-400 text-center">
+                    &copy; 2023 RemoteCareAI. All rights reserved.
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Role toggle functionality
+        const roles = {
+            doctor: { 
+                title: 'Doctor',
+                fields: '#doctor-fields',
+                color: 'blue' 
+            },
+            patient: { 
+                title: 'Patient',
+                fields: '#patient-fields',
+                color: 'purple' 
+            },
+            family: { 
+                title: 'Family Member',
+                fields: '#family-fields',
+                color: 'green' 
+            }
+        };
+
+        function switchRole(role) {
+            document.querySelectorAll('[id$="-tab"]').forEach(tab => {
+                tab.classList.remove('text-blue-600', 'border-blue-500');
+                tab.classList.add('text-gray-500', 'border-transparent');
+            });
+            document.getElementById(`${role}-tab`).classList.add(`text-${roles[role].color}-600`, `border-${roles[role].color}-500`);
+            document.getElementById(`${role}-tab`).classList.remove('text-gray-500', 'border-transparent');
+
+            document.getElementById('login-title').textContent = `${roles[role].title} Login`;
+            document.getElementById('register-title').textContent = `${roles[role].title} Registration`;
+            document.querySelectorAll('[id$="-fields"]').forEach(fields => fields.classList.add('hidden'));
+            document.querySelector(roles[role].fields).classList.remove('hidden');
+        }
+
+        document.getElementById('doctor-tab').addEventListener('click', () => switchRole('doctor'));
+        document.getElementById('patient-tab').addEventListener('click', () => switchRole('patient'));
+        document.getElementById('family-tab').addEventListener('click', () => switchRole('family'));
+
+        // Form toggle functionality
+        document.getElementById('show-signup').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('login-form').classList.add('hidden');
+            document.getElementById('signup-form').classList.remove('hidden');
+        });
+
+        document.getElementById('show-login').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('signup-form').classList.add('hidden');
+            document.getElementById('login-form').classList.remove('hidden');
+        });
+
+        // Handle form submissions
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            // Add your authentication logic here
+            console.log('Login submitted:', { email, password });
+            alert('Login functionality will be implemented with backend integration');
+        });
+
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const confirmPassword = document.getElementById('signup-confirm').value;
+            
+            // Add your registration logic here
+            let role = 'doctor';
+            if (document.getElementById('patient-tab').classList.contains('text-purple-600')) role = 'patient';
+            if (document.getElementById('family-tab').classList.contains('text-green-600')) role = 'family';
+            
+            const formData = { name, email, password, confirmPassword, role };
+            
+            if (role === 'patient') {
+                formData.condition = document.getElementById('patient-condition').value;
+            }
+            if (role === 'family') {
+                formData.relationship = document.getElementById('family-relationship').value;
+                formData.patientId = document.getElementById('patient-id').value;
+            }
+            
+            console.log('Signup submitted:', formData);
+            alert(`${roles[role].title} registration will be implemented with backend integration`);
+        });
+
+        // Google Sign In handler
+        function handleGoogleSignIn(response) {
+            // Handle the Google sign-in response
+            console.log('Google sign-in response:', response);
+            
+            // This will contain the user's Google credentials
+            const credential = response.credential;
+            
+            // Verify the credential with your backend
+            alert('Google authentication successful! Credential: ' + credential);
+            
+            // Redirect to dashboard or perform next steps
+            // window.location.href = '/doctor-dashboard.html';
+        }
+    </script>
+</body>
+</html>
